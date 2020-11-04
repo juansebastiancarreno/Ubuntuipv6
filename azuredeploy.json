@@ -130,10 +130,10 @@
           {
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LoadBalancerFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'Odin-loadBalancer', 'LoadBalancerFE')]"
               },
               "backendAddressPool": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'Odin-loadBalancer', 'LoadBalancerFE')]"
               },
               "protocol": "Tcp",
               "frontendPort": 80,
@@ -145,10 +145,10 @@
           {
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LoadBalancerFE-v6')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'Odin-loadBalancer', 'LoadBalancerFE-v6')]"
               },
               "backendAddressPool": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP-v6')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'Odin-loadBalancer', 'LoadBalancerFEAP-v6')]"
               },
               "protocol": "Tcp",
               "frontendPort": 80,
