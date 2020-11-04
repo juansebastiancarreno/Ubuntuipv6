@@ -288,7 +288,7 @@
       ],
       "properties": {
         "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups','dsNsg')]"
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]"
         },
         "ipConfigurations": [
           {
