@@ -35,7 +35,6 @@
     "subnetv4AddressRange": "192.168.100.0/24",
     "subnetv6AddressRange": "ace:cab:deca:deed::/64",
     "subnetName": "DualStackSubnet",
-    "newStorageAccountName": "[concat('st', uniqueString(resourceGroup().id))]",
     "availabilitySetName": "cpe-avset",
     "subnet-id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VNET', variables('subnetName'))]",
     "numberOfInstances": 1,
@@ -339,7 +338,6 @@
       },
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts',variables('newStorageAccountName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]",
         "netIntLoop"
       ],
