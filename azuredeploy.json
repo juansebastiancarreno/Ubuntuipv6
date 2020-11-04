@@ -1,0 +1,379 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "The name of the administrator of the new VM. Exclusion list: 'admin','administrator'"
+      }
+    },
+    "adminPassword": {
+      "type": "securestring",
+      "metadata": {
+        "description": "The password for the administrator account of the new VM"
+      }
+    },
+    "location": {
+      "type": "string",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Location for all resources."
+      }
+    },
+    "vmSize": {
+      "type": "string",
+      "defaultValue": "Standard_D2s_v3",
+      "metadata": {
+        "description": "description"
+      }
+    }
+  },
+  "variables": {
+    "vnetv4AddressRange": "192.168.100.0/16",
+    "vnetv6AddressRange": "ace:cab:deca::/48",
+    "subnetv4AddressRange": "192.168.100.0/24",
+    "subnetv6AddressRange": "ace:cab:deca:deed::/64",
+    "subnetName": "DualStackSubnet",
+    "newStorageAccountName": "[concat('st', uniqueString(resourceGroup().id))]",
+    "availabilitySetName": "cpe-avset",
+    "subnet-id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VNET', variables('subnetName'))]",
+    "numberOfInstances": 1,
+    "vmName": "ODIN",
+    "publicipName": "Odin-ip",
+    "imagePublisher": "Canonical",
+    "imageOffer": "UbuntuServer",
+    "imageSku": "18.04-LTS"
+  },
+  "resources": [
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[concat(variables('publicipName'), copyindex())]",
+      "copy": {
+        "name": "Odin-ipLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "LB-ip",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "LB-ip-v6",
+      "location": "[parameters('location')]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAddressVersion": "IPv6"
+      }
+    },
+    {
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetName')]",
+      "apiVersion": "2020-06-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "platformFaultDomainCount": "2",
+        "platformUpdateDomainCount": "5"
+      },
+      "sku": {
+        "name": "Aligned"
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "name": "Odin-loadBalancer",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip')]",
+        "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip-v6')]"
+      ],
+      "properties": {
+        "frontendIpConfigurations": [
+          {
+            "name": "LoadBalancerFE",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'LB-ip')]"
+              }
+            }
+          },
+          {
+            "name": "LoadBalancerFE-v6",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip-v6')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "LoadBalancerFEAP"
+          },
+          {
+            "name": "LoadBalancerFEAP-v6"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LoadBalancerFE')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFE')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80,
+              "idleTimeoutInMinutes": 15
+            },
+            "name": "lbrule"
+          },
+          {
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LoadBalancerFE-v6')]"
+              },
+              "backendAddressPool": {
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP-v6')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 80,
+              "backendPort": 80
+            },
+            "name": "loadbalancerRule-v6"
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "VirtualNetwork-SitioWeb",
+      "location": "[parameters('location')]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[variables('vnetv4AddressRange')]",
+            "[variables('vnetv6AddressRange')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetName')]",
+            "properties": {
+              "addressPrefixes": [
+                "[variables('subnetv4AddressRange')]",
+                "[variables('subnetv6AddressRange')]"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "Odin-Nsg",
+      "location": "[parameters('location')]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "allow-HTTP-in",
+            "properties": {
+              "description": "Allow HTTP",
+              "protocol": "TCP",
+              "sourcePortRange": "80",
+              "destinationPortRange": "80",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1001,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-all-out",
+            "properties": {
+              "description": "Allow out All",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1002,
+              "direction": "Outbound"
+            }
+          },
+          {
+            "name": "allow-RDP-in",
+            "properties": {
+              "description": "Allow RDP",
+              "protocol": "Tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "3389",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "priority": 1003,
+              "direction": "Inbound"
+            }
+          },
+          {
+            "name": "allow-MyIpv6App-out",
+            "properties": {
+              "description": "Allow My IPv6 App",
+              "protocol": "Tcp",
+              "sourcePortRange": "33819-33829",
+              "destinationPortRange": "5000-6000",
+              "sourceAddressPrefix": "ace:cab:deca:deed::/64",
+              "destinationAddressPrefixes": [
+                "cab:cab:aaaa:bbbb::/64",
+                "cab:cab:1111:2222::/64"
+              ],
+              "access": "Allow",
+              "priority": 1004,
+              "direction": "Outbound"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "v6routeTable",
+      "apiVersion": "2020-05-01",
+      "location": "[parameters('location')]",
+      "properties": {
+        "routes": [
+          {
+            "name": "v6route",
+            "properties": {
+              "addressPrefix": "cab:cab::/96",
+              "nextHopType": "VirtualAppliance",
+              "nextHopIpAddress": "ace:cab:deca:f00d::1"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-05-01",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('vmName'),copyindex())]",
+      "copy": {
+        "name": "netIntLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/virtualNetworks','VirtualNetwork-SitioWeb')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]",
+        "[resourceId('Microsoft.Network/loadBalancers','Odin-loadBalancer')]",
+        "publicIpLoop"
+      ],
+      "properties": {
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups','dsNsg')]"
+        },
+        "ipConfigurations": [
+          {
+            "name": "ipconfig-v4",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddressVersion": "IPv4",
+              "primary": true,
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses',concat(variables('publicipName'),copyindex()))]"
+              },
+              "subnet": {
+                "id": "[variables('subnet-id')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP')]"
+                }
+              ]
+            }
+          },
+          {
+            "name": "ipconfig-v6",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "privateIPAddressVersion": "IPv6",
+              "subnet": {
+                "id": "[variables('subnet-id')]"
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP-v6')]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2020-06-01",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('vmName'), copyindex())]",
+      "copy": {
+        "name": "virtualMachineLoop",
+        "count": "[variables('numberOfInstances')]"
+      },
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts',variables('newStorageAccountName'))]",
+        "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]",
+        "netIntLoop"
+      ],
+      "properties": {
+        "availabilitySet": {
+          "id": "[resourceId('Microsoft.Compute/availabilitySets', variables('availabilitySetName'))]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('vmName'), copyindex())]",
+          "adminUsername": "[parameters('adminUserName')]",
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[variables('imagePublisher')]",
+            "offer": "[variables('imageOffer')]",
+            "sku": "[variables('imageSku')]",
+            "version": "latest"
+          },
+          "osDisk": {
+            "createOption": "FromImage"
+          }
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmName'),copyindex()))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
