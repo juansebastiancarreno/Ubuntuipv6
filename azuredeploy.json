@@ -283,7 +283,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Network/virtualNetworks','VirtualNetwork-SitioWeb')]",
         "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]",
-        "[resourceId('Microsoft.Network/loadBalancers','Odin-loadBalancer')]",
+        "[resourceId('Microsoft.Network/loadBalancers','loadBalancer')]",
         "Odin-ipLoop"
       ],
       "properties": {
