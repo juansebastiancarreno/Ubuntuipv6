@@ -285,7 +285,7 @@
         "[resourceId('Microsoft.Network/virtualNetworks','VirtualNetwork-SitioWeb')]",
         "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]",
         "[resourceId('Microsoft.Network/loadBalancers','Odin-loadBalancer')]",
-        "publicIpLoop"
+        "Odin-ipLoop"
       ],
       "properties": {
         "networkSecurityGroup": {
