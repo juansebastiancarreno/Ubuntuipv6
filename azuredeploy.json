@@ -30,9 +30,9 @@
     }
   },
   "variables": {
-    "vnetv4AddressRange": "192.168.100.0/16",
+    "vnetv4AddressRange": "10.0.0.0/16",
     "vnetv6AddressRange": "ace:cab:deca::/48",
-    "subnetv4AddressRange": "192.168.100.0/24",
+    "subnetv4AddressRange": "10.0.0.0/24",
     "subnetv6AddressRange": "ace:cab:deca:deed::/64",
     "subnetName": "DualStackSubnet",
     "availabilitySetName": "cpe-avset",
