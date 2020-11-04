@@ -92,48 +92,48 @@
     },
     {
       "apiVersion": "2020-05-01",
-      "name": "Odin-loadBalancer",
+      "name": "loadBalancer",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip')]",
-        "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip-v6')]"
+        "[resourceId('Microsoft.Network/publicIPAddresses','lbpublicip')]",
+        "[resourceId('Microsoft.Network/publicIPAddresses','lbpublicip-v6')]"
       ],
       "properties": {
         "frontendIpConfigurations": [
           {
-            "name": "LoadBalancerFE",
+            "name": "LBFE",
             "properties": {
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'LB-ip')]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'lbpublicip')]"
               }
             }
           },
           {
-            "name": "LoadBalancerFE-v6",
+            "name": "LBFE-v6",
             "properties": {
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses','LB-ip-v6')]"
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses','lbpublicip-v6')]"
               }
             }
           }
         ],
         "backendAddressPools": [
           {
-            "name": "LoadBalancerFEAP"
+            "name": "LBBAP"
           },
           {
-            "name": "LoadBalancerFEAP-v6"
+            "name": "LBBAP-v6"
           }
         ],
         "loadBalancingRules": [
           {
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'Odin-loadBalancer', 'LoadBalancerFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LBFE')]"
               },
               "backendAddressPool": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'Odin-loadBalancer', 'LoadBalancerFE')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LBBAP')]"
               },
               "protocol": "Tcp",
               "frontendPort": 80,
@@ -145,16 +145,16 @@
           {
             "properties": {
               "frontendIPConfiguration": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'Odin-loadBalancer', 'LoadBalancerFE-v6')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/frontendIpConfigurations', 'loadBalancer', 'LBFE-v6')]"
               },
               "backendAddressPool": {
-                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'Odin-loadBalancer', 'LoadBalancerFEAP-v6')]"
+                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LBBAP-v6')]"
               },
               "protocol": "Tcp",
               "frontendPort": 80,
               "backendPort": 80
             },
-            "name": "loadbalancerRule-v6"
+            "name": "lbrule-v6"
           }
         ]
       }
