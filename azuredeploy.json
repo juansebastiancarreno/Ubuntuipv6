@@ -35,22 +35,23 @@
     "subnetv4AddressRange": "10.0.0.0/24",
     "subnetv6AddressRange": "ace:cab:deca:deed::/64",
     "subnetName": "DualStackSubnet",
+    "newStorageAccountName": "[concat('st', uniqueString(resourceGroup().id))]",
     "availabilitySetName": "cpe-avset",
     "subnet-id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VirtualNetwork-SitioWeb', variables('subnetName'))]",
-    "numberOfInstances": 1,
+    "numberOfInstances": 2,
     "vmName": "ODIN",
     "publicipName": "Odin-ip",
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "imageSku": "18.04-LTS"
   },
-  "resources": [
+    "resources": [
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[concat(variables('publicipName'), copyindex())]",
       "copy": {
-        "name": "Odin-ipLoop",
+        "name": "publicIpLoop",
         "count": "[variables('numberOfInstances')]"
       },
       "location": "[parameters('location')]",
@@ -89,6 +90,17 @@
       "sku": {
         "name": "Aligned"
       }
+    },
+    {
+      "apiVersion": "2019-06-01",
+      "type": "Microsoft.Storage/storageAccounts",
+      "name": "[variables('newStorageAccountName')]",
+      "location": "[parameters('location')]",
+      "sku": {
+        "name": "Standard_LRS"
+      },
+      "kind": "StorageV2",
+      "properties": {}
     },
     {
       "apiVersion": "2020-05-01",
@@ -162,7 +174,7 @@
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "VirtualNetwork-SitioWeb",
+      "name": "VNET",
       "location": "[parameters('location')]",
       "properties": {
         "addressSpace": {
@@ -187,7 +199,7 @@
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "Odin-Nsg",
+      "name": "dsNsg",
       "location": "[parameters('location')]",
       "properties": {
         "securityRules": [
@@ -274,21 +286,21 @@
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "OdinNetwork",
+      "name": "[concat(variables('vmName'),copyindex())]",
       "copy": {
         "name": "netIntLoop",
         "count": "[variables('numberOfInstances')]"
       },
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks','VirtualNetwork-SitioWeb')]",
-        "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]",
+        "[resourceId('Microsoft.Network/virtualNetworks','VNET')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups','dsNsg')]",
         "[resourceId('Microsoft.Network/loadBalancers','loadBalancer')]",
-        "Odin-ipLoop"
+        "publicIpLoop"
       ],
       "properties": {
         "networkSecurityGroup": {
-          "id": "[resourceId('Microsoft.Network/networkSecurityGroups','Odin-Nsg')]"
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups','dsNsg')]"
         },
         "ipConfigurations": [
           {
@@ -305,7 +317,7 @@
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP')]"
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LBBAP')]"
                 }
               ]
             }
@@ -320,7 +332,7 @@
               },
               "loadBalancerBackendAddressPools": [
                 {
-                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LoadBalancerFEAP-v6')]"
+                  "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'loadBalancer', 'LBBAP-v6')]"
                 }
               ]
             }
@@ -338,6 +350,7 @@
       },
       "location": "[parameters('location')]",
       "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts',variables('newStorageAccountName'))]",
         "[resourceId('Microsoft.Compute/availabilitySets',variables('availabilitySetName'))]",
         "netIntLoop"
       ],
@@ -367,7 +380,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces',OdinNetwork"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces',concat(variables('vmName'),copyindex()))]"
             }
           ]
         }
