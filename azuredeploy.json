@@ -36,16 +36,16 @@
     "subnetv6AddressRange": "ace:cab:deca:deed::/64",
     "subnetName": "DualStackSubnet",
     "newStorageAccountName": "[concat('st', uniqueString(resourceGroup().id))]",
-    "availabilitySetName": "cpe-avset",
-    "subnet-id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VirtualNetwork-SitioWeb', variables('subnetName'))]",
+    "availabilitySetName": "myavset",
+    "subnet-id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'VNET', variables('subnetName'))]",
     "numberOfInstances": 2,
     "vmName": "ODIN",
-    "publicipName": "Odin-ip",
+    "publicipName": "RDPpublicIp",
     "imagePublisher": "Canonical",
     "imageOffer": "UbuntuServer",
     "imageSku": "18.04-LTS"
   },
-    "resources": [
+  "resources": [
     {
       "apiVersion": "2020-05-01",
       "type": "Microsoft.Network/publicIPAddresses",
