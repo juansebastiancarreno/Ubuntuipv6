@@ -1,56 +1,13 @@
 {
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
-    "parameters": {
-        "virtualNetworks_SWvnet_addressPrefix": {
-            "type": "SecureString"
-        },
-        "subnets_SwSubnet_addressPrefix": {
-            "type": "SecureString"
-        },
-        "virtualMachines_ODIN_name": {
-            "defaultValue": "ODIN",
-            "type": "String"
-        },
-        "virtualNetworks_SWvnet_name": {
-            "defaultValue": "SWvnet",
-            "type": "String"
-        },
-        "availabilitySets_SWavset_name": {
-            "defaultValue": "SWavset",
-            "type": "String"
-        },
-        "networkInterfaces_OdinNetwork_name": {
-            "defaultValue": "OdinNetwork",
-            "type": "String"
-        },
-        "loadBalancers_SWLoadBalancer_name": {
-            "defaultValue": "SWLoadBalancer",
-            "type": "String"
-        },
-        "networkSecurityGroups_OdinNSG_name": {
-            "defaultValue": "OdinNSG",
-            "type": "String"
-        },
-        "publicIPAddresses_SWpublicip_v4_name": {
-            "defaultValue": "SWpublicip_v4",
-            "type": "String"
-        },
-        "publicIPAddresses_SWpublicip_v6_name": {
-            "defaultValue": "SWpublicip_v6",
-            "type": "String"
-        },
-        "publicIPAddresses_OdinIP_name": {
-            "defaultValue": "OdinIP",
-            "type": "String"
-        }
-    },
+    "parameters": {},
     "variables": {},
     "resources": [
         {
             "type": "Microsoft.Network/networkSecurityGroups",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('networkSecurityGroups_OdinNSG_name')]",
+            "name": "Odin_NSG",
             "location": "westus",
             "properties": {
                 "securityRules": [
@@ -98,7 +55,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('publicIPAddresses_SWpublicip_v4_name')]",
+            "name": "SWpublicip_v4",
             "location": "westus",
             "sku": {
                 "name": "Standard"
@@ -113,7 +70,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('publicIPAddresses_SWpublicip_v6_name')]",
+            "name": "SWpublicip_v6",
             "location": "westus",
             "sku": {
                 "name": "Standard"
@@ -128,7 +85,7 @@
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('publicIPAddresses_OdinIP_name')]",
+            "name": "OdinIP",
             "location": "westus",
             "sku": {
                 "name": "Standard"
@@ -143,7 +100,7 @@
         {
             "type": "Microsoft.Network/virtualNetworks",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('virtualNetworks_SWvnet_name')]",
+            "name": "SWvnet",
             "location": "westus",
             "properties": {
                 "addressSpace": {
@@ -164,7 +121,7 @@
                             "delegations": [],
                             "privateEndpointNetworkPolicies": "Enabled",
                             "privateLinkServiceNetworkPolicies": "Enabled",
-                            "addressPrefix": "[parameters('virtualNetworks_SWvnet_addressPrefix')]"
+                            "addressPrefix": null
                         }
                     }
                 ],
@@ -176,10 +133,10 @@
         {
             "type": "Microsoft.Compute/availabilitySets",
             "apiVersion": "2019-07-01",
-            "name": "[parameters('availabilitySets_SWavset_name')]",
+            "name": "SWavset",
             "location": "westus",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_ODIN_name'))]"
+                "[resourceId('Microsoft.Compute/virtualMachines', 'ODIN')]"
             ],
             "sku": {
                 "name": "Aligned"
@@ -189,7 +146,7 @@
                 "platformFaultDomainCount": 2,
                 "virtualMachines": [
                     {
-                        "id": "[resourceId('Microsoft.Compute/virtualMachines', parameters('virtualMachines_ODIN_name'))]"
+                        "id": "[resourceId('Microsoft.Compute/virtualMachines', 'ODIN')]"
                     }
                 ]
             }
@@ -197,14 +154,14 @@
         {
             "type": "Microsoft.Network/loadBalancers/backendAddressPools",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('loadBalancers_SWLoadBalancer_name'), '/dsLbBackEndPool_v4')]",
+            "name": "SWLoadBalancer/dsLbBackEndPool_v4",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer')]"
             ],
             "properties": {
                 "loadBalancerBackendAddresses": [
                     {
-                        "name": "RG-SitioWeb_OdinNetworkdsIp4Config",
+                        "name": "odin_pruebas_OdinNetworkdsIp4Config",
                         "properties": {}
                     }
                 ]
@@ -213,14 +170,14 @@
         {
             "type": "Microsoft.Network/loadBalancers/backendAddressPools",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('loadBalancers_SWLoadBalancer_name'), '/dsLbBackEndPool_v6')]",
+            "name": "SWLoadBalancer/dsLbBackEndPool_v6",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer')]"
             ],
             "properties": {
                 "loadBalancerBackendAddresses": [
                     {
-                        "name": "RG-SitioWeb_OdinNetworkdsIp6Config",
+                        "name": "odin_pruebas_OdinNetworkdsIp6Config",
                         "properties": {}
                     }
                 ]
@@ -229,13 +186,13 @@
         {
             "type": "Microsoft.Network/loadBalancers/inboundNatRules",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('loadBalancers_SWLoadBalancer_name'), '/NatRulev4')]",
+            "name": "SWLoadBalancer/NatRulev4",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer')]"
             ],
             "properties": {
                 "frontendIPConfiguration": {
-                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
                 },
                 "frontendPort": 8080,
                 "backendPort": 8080,
@@ -248,13 +205,13 @@
         {
             "type": "Microsoft.Network/loadBalancers/inboundNatRules",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('loadBalancers_SWLoadBalancer_name'), '/NatRulev6')]",
+            "name": "SWLoadBalancer/NatRulev6",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name'))]"
+                "[resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer')]"
             ],
             "properties": {
                 "frontendIPConfiguration": {
-                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
+                    "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
                 },
                 "frontendPort": 8080,
                 "backendPort": 8080,
@@ -267,9 +224,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('networkSecurityGroups_OdinNSG_name'), '/FD_Allow')]",
+            "name": "Odin_NSG/FD_Allow",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_OdinNSG_name'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'Odin_NSG')]"
             ],
             "properties": {
                 "protocol": "TCP",
@@ -293,9 +250,9 @@
         {
             "type": "Microsoft.Network/networkSecurityGroups/securityRules",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('networkSecurityGroups_OdinNSG_name'), '/Port_22')]",
+            "name": "Odin_NSG/Port_22",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_OdinNSG_name'))]"
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'Odin_NSG')]"
             ],
             "properties": {
                 "protocol": "TCP",
@@ -315,9 +272,9 @@
         {
             "type": "Microsoft.Network/virtualNetworks/subnets",
             "apiVersion": "2020-05-01",
-            "name": "[concat(parameters('virtualNetworks_SWvnet_name'), '/SwSubnet')]",
+            "name": "SWvnet/SwSubnet",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworks_SWvnet_name'))]"
+                "[resourceId('Microsoft.Network/virtualNetworks', 'SWvnet')]"
             ],
             "properties": {
                 "addressPrefixes": [
@@ -328,21 +285,21 @@
                 "delegations": [],
                 "privateEndpointNetworkPolicies": "Enabled",
                 "privateLinkServiceNetworkPolicies": "Enabled",
-                "addressPrefix": "[parameters('subnets_SwSubnet_addressPrefix')]"
+                "addressPrefix": null
             }
         },
         {
             "type": "Microsoft.Compute/virtualMachines",
             "apiVersion": "2019-07-01",
-            "name": "[parameters('virtualMachines_ODIN_name')]",
+            "name": "ODIN",
             "location": "westus",
             "dependsOn": [
-                "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_SWavset_name'))]",
-                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_OdinNetwork_name'))]"
+                "[resourceId('Microsoft.Compute/availabilitySets', 'SWavset')]",
+                "[resourceId('Microsoft.Network/networkInterfaces', 'OdinNetwork')]"
             ],
             "properties": {
                 "availabilitySet": {
-                    "id": "[resourceId('Microsoft.Compute/availabilitySets', parameters('availabilitySets_SWavset_name'))]"
+                    "id": "[resourceId('Microsoft.Compute/availabilitySets', 'SWavset')]"
                 },
                 "hardwareProfile": {
                     "vmSize": "Standard_D2s_v3"
@@ -356,19 +313,19 @@
                     },
                     "osDisk": {
                         "osType": "Linux",
-                        "name": "[concat(parameters('virtualMachines_ODIN_name'), '_OsDisk_1_93f21bcbc7a8465f9e649b01c09893fa')]",
+                        "name": "Odin_Disk",
                         "createOption": "FromImage",
                         "caching": "ReadWrite",
                         "managedDisk": {
                             "storageAccountType": "Premium_LRS",
-                            "id": "[resourceId('Microsoft.Compute/disks', concat(parameters('virtualMachines_ODIN_name'), 'Odin_OsDisk_1'))]"
+                            "id": "[resourceId('Microsoft.Compute/disks', 'Odin_Disk')]"
                         },
                         "diskSizeGB": 1024
                     },
                     "dataDisks": []
                 },
                 "osProfile": {
-                    "computerName": "[parameters('virtualMachines_ODIN_name')]",
+                    "computerName": "ODIN",
                     "adminUsername": "admincpe",
                     "linuxConfiguration": {
                         "disablePasswordAuthentication": false,
@@ -381,7 +338,7 @@
                 "networkProfile": {
                     "networkInterfaces": [
                         {
-                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_OdinNetwork_name'))]"
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', 'OdinNetwork')]"
                         }
                     ]
                 },
@@ -396,13 +353,13 @@
         {
             "type": "Microsoft.Network/loadBalancers",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('loadBalancers_SWLoadBalancer_name')]",
+            "name": "SWLoadBalancer",
             "location": "westus",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SWpublicip_v4_name'))]",
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SWpublicip_v6_name'))]",
-                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v4')]",
-                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v6')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'SWpublicip_v4')]",
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'SWpublicip_v6')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v4')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v6')]"
             ],
             "sku": {
                 "name": "Standard"
@@ -414,7 +371,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SWpublicip_v4_name'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'SWpublicip_v4')]"
                             },
                             "privateIPAddressVersion": "IPv4"
                         }
@@ -424,7 +381,7 @@
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_SWpublicip_v6_name'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'SWpublicip_v6')]"
                             },
                             "privateIPAddressVersion": "IPv4"
                         }
@@ -436,7 +393,7 @@
                         "properties": {
                             "loadBalancerBackendAddresses": [
                                 {
-                                    "name": "RG-SitioWeb_OdinNetworkdsIp4Config",
+                                    "name": "odin_pruebas_OdinNetworkdsIp4Config",
                                     "properties": {}
                                 }
                             ]
@@ -447,7 +404,7 @@
                         "properties": {
                             "loadBalancerBackendAddresses": [
                                 {
-                                    "name": "RG-SitioWeb_OdinNetworkdsIp6Config",
+                                    "name": "odin_pruebas_OdinNetworkdsIp6Config",
                                     "properties": {}
                                 }
                             ]
@@ -459,7 +416,7 @@
                         "name": "dsLBrule_v4",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
                             },
                             "frontendPort": 80,
                             "backendPort": 80,
@@ -470,10 +427,10 @@
                             "loadDistribution": "Default",
                             "disableOutboundSnat": false,
                             "backendAddressPool": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v4')]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v4')]"
                             },
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/probes/ProbeSSH')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/probes/ProbeSSH')]"
                             }
                         }
                     },
@@ -481,7 +438,7 @@
                         "name": "dsLBrule_v6",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
                             },
                             "frontendPort": 80,
                             "backendPort": 80,
@@ -492,10 +449,10 @@
                             "loadDistribution": "Default",
                             "disableOutboundSnat": false,
                             "backendAddressPool": {
-                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v6')]"
+                                "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v6')]"
                             },
                             "probe": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/probes/ProbeSSH')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/probes/ProbeSSH')]"
                             }
                         }
                     }
@@ -516,7 +473,7 @@
                         "name": "NatRulev4",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v4')]"
                             },
                             "frontendPort": 8080,
                             "backendPort": 8080,
@@ -530,7 +487,7 @@
                         "name": "NatRulev6",
                         "properties": {
                             "frontendIPConfiguration": {
-                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('loadBalancers_SWLoadBalancer_name')), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
+                                "id": "[concat(resourceId('Microsoft.Network/loadBalancers', 'SWLoadBalancer'), '/frontendIPConfigurations/dsLbFrontEnd_v6')]"
                             },
                             "frontendPort": 8080,
                             "backendPort": 8080,
@@ -548,16 +505,16 @@
         {
             "type": "Microsoft.Network/networkInterfaces",
             "apiVersion": "2020-05-01",
-            "name": "[parameters('networkInterfaces_OdinNetwork_name')]",
+            "name": "OdinNetwork",
             "location": "westus",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_OdinIP_name'))]",
-                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_SWvnet_name'), 'SwSubnet')]",
-                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v4')]",
-                "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancers_SWLoadBalancer_name'), 'NatRulev4')]",
-                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v6')]",
-                "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancers_SWLoadBalancer_name'), 'NatRulev6')]",
-                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_OdinNSG_name'))]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', 'SshPublicIP_1')]",
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'SWvnet', 'SwSubnet')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v4')]",
+                "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', 'SWLoadBalancer', 'NatRulev4')]",
+                "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v6')]",
+                "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', 'SWLoadBalancer', 'NatRulev6')]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', 'Odin_NSG')]"
             ],
             "properties": {
                 "ipConfigurations": [
@@ -567,21 +524,21 @@
                             "privateIPAddress": "10.0.0.4",
                             "privateIPAllocationMethod": "Dynamic",
                             "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPAddresses_OdinIP_name'))]"
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'SshPublicIP_1')]"
                             },
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_SWvnet_name'), 'SwSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'SWvnet', 'SwSubnet')]"
                             },
                             "primary": true,
                             "privateIPAddressVersion": "IPv4",
                             "loadBalancerBackendAddressPools": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v4')]"
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v4')]"
                                 }
                             ],
                             "loadBalancerInboundNatRules": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancers_SWLoadBalancer_name'), 'NatRulev4')]"
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', 'SWLoadBalancer', 'NatRulev4')]"
                                 }
                             ]
                         }
@@ -592,17 +549,17 @@
                             "privateIPAddress": "ace:cab:deca:deed::4",
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
-                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworks_SWvnet_name'), 'SwSubnet')]"
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'SWvnet', 'SwSubnet')]"
                             },
                             "privateIPAddressVersion": "IPv6",
                             "loadBalancerBackendAddressPools": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', parameters('loadBalancers_SWLoadBalancer_name'), 'dsLbBackEndPool_v6')]"
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/backendAddressPools', 'SWLoadBalancer', 'dsLbBackEndPool_v6')]"
                                 }
                             ],
                             "loadBalancerInboundNatRules": [
                                 {
-                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', parameters('loadBalancers_SWLoadBalancer_name'), 'NatRulev6')]"
+                                    "id": "[resourceId('Microsoft.Network/loadBalancers/inboundNatRules', 'SWLoadBalancer', 'NatRulev6')]"
                                 }
                             ]
                         }
@@ -614,7 +571,7 @@
                 "enableAcceleratedNetworking": false,
                 "enableIPForwarding": false,
                 "networkSecurityGroup": {
-                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_OdinNSG_name'))]"
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'Odin_NSG')]"
                 }
             }
         }
