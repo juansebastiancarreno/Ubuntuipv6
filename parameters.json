@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualNetworks_dsVnet_addressPrefix": {
+            "value": null
+        },
+        "subnets_dsSubnet_addressPrefix": {
+            "value": null
+        },
+        "virtualMachines_OdinVM_name": {
+            "value": null
+        },
+        "virtualNetworks_dsVnet_name": {
+            "value": null
+        },
+        "availabilitySets_dsAVset_name": {
+            "value": null
+        },
+        "networkInterfaces_dsNIC1_name": {
+            "value": null
+        },
+        "loadBalancers_MyLoadBalancer_name": {
+            "value": null
+        },
+        "networkSecurityGroups_dsNSG1_name": {
+            "value": null
+        },
+        "publicIPAddresses_dsPublicIP_v4_name": {
+            "value": null
+        },
+        "publicIPAddresses_dsPublicIP_v6_name": {
+            "value": null
+        },
+        "publicIPAddresses_SshPublicIP_1_name": {
+            "value": null
+        }
+    }
+}
